@@ -5,7 +5,7 @@ import os
 TITLE = "Chrome Dino Runner"
 SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 1100
-FPS = 30
+FPS = 45
 IMG_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
 
 # Assets Constants
@@ -23,7 +23,7 @@ RUNNING_SHIELD = [
 
 RUNNING_HAMMER = [
     pygame.image.load(os.path.join(IMG_DIR, "Dino/DinoRun1Hammer.png")),
-    pygame.image.load(os.path.join(IMG_DIR, "Dino/DinoRun2Hammer1.png")),
+    pygame.image.load(os.path.join(IMG_DIR, "Dino/DinoRun2Hammer.png")),
 ]
 
 JUMPING = pygame.image.load(os.path.join(IMG_DIR, "Dino/DinoJump.png"))
