@@ -72,5 +72,6 @@ HEART = pygame.image.load(os.path.join(IMG_DIR, 'Other/SmallHeart.png'))
 RESET_GAME = pygame.image.load(os.path.join(IMG_DIR, 'Other/Reset.png'))
 
 DEFAULT_TYPE = "default"
+SHIELD_TYPE = "shield"
 
 FONT_STYLE = "freesansbold.ttf"
