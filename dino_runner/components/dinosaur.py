@@ -2,12 +2,12 @@ from unittest.mock import DEFAULT
 import pygame
 from pygame.sprite import Sprite
 
-from dino_runner.utils.constants import DEFAULT_TYPE, DUCKING, DUCKING_SHIELD, JUMPING, JUMPING_SHIELD, RUNNING, RUNNING_SHIELD, SHIELD, SHIELD_TYPE 
+from dino_runner.utils.constants import CLOCK, CLOCK_TYPE, DEFAULT_TYPE, DINO_DEAD, DINO_FINISH, DINO_JUMP_SOUND, DUCKING, DUCKING_HAMMER, DUCKING_SHIELD, HAMMER_TYPE, JUMPING, JUMPING_HAMMER, JUMPING_SHIELD, RUNNING, RUNNING_HAMMER, RUNNING_SHIELD, SHIELD, SHIELD_TYPE 
 
 
-DUCK_IMG = { DEFAULT_TYPE: DUCKING, SHIELD_TYPE: DUCKING_SHIELD}
-JUMP_IMG = { DEFAULT_TYPE: JUMPING, SHIELD_TYPE: JUMPING_SHIELD}
-RUN_IMG = { DEFAULT_TYPE: RUNNING, SHIELD_TYPE: RUNNING_SHIELD}
+DUCK_IMG = { DEFAULT_TYPE: DUCKING, SHIELD_TYPE: DUCKING_SHIELD, HAMMER_TYPE: DUCKING_HAMMER, CLOCK_TYPE: DUCKING}
+JUMP_IMG = { DEFAULT_TYPE: JUMPING, SHIELD_TYPE: JUMPING_SHIELD, HAMMER_TYPE: JUMPING_HAMMER, CLOCK_TYPE: JUMPING}
+RUN_IMG = { DEFAULT_TYPE: RUNNING, SHIELD_TYPE: RUNNING_SHIELD, HAMMER_TYPE: RUNNING_HAMMER, CLOCK_TYPE: RUNNING}
 
 class Dinosaur(Sprite):
     X_POS = 80
@@ -30,6 +30,7 @@ class Dinosaur(Sprite):
 
         self.has_power_up = False
         self.power_up_tim_up = 0
+
 
     def update(self, user_input):
         if self.dino_run:
@@ -66,11 +67,14 @@ class Dinosaur(Sprite):
         self.image = JUMP_IMG[self.type]
         self.dino_rect.y -= self.jump_vel * 4
         self.jump_vel -= 0.8
+        
 
         if self.jump_vel < -self.JUMP_VEL:
+            DINO_JUMP_SOUND.play()
             self.dino_rect.y = self.Y_POS
             self.dino_jump = False
             self.jump_vel = self.JUMP_VEL
+            
 
     def duck(self):
         self.image = DUCK_IMG[self.type][self.step_index // 5]

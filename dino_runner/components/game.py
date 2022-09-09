@@ -1,11 +1,11 @@
-from typing import Text
-from unittest.mock import DEFAULT
+import random
 import pygame
 
 from dino_runner.components.dinosaur import Dinosaur
 from dino_runner.components.obstacles.obstacle_magager import ObstacleManager
+from dino_runner.components.power_ups.hammer import Hammer
 from dino_runner.components.power_ups.power_up_manager import PowerUpManager
-from dino_runner.utils.constants import BG, DEFAULT_TYPE, FONT_STYLE, ICON, RESET_GAME, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS
+from dino_runner.utils.constants import BG, CLOCK, CLOUD, DEFAULT_TYPE, DINO_FINISH, FONT_STYLE, GAME_OVER_SOUND, HAMMER, HAMMER_BREAK, ICON, RESET_GAME, SCREEN_HEIGHT, SCREEN_WIDTH, SHIELD, TITLE, FPS
 
 
 
@@ -28,8 +28,10 @@ class Game:
         self.running = False
         self.score = 0
         self.max_score = 0
+        self.hammer_count = 3
         self.death_count = 0
         self.text_color = (0, 0, 0)
+        self.game_speed_save = 0
 
 
     def execute(self):
@@ -38,13 +40,16 @@ class Game:
             if not self.playing:
                 self.show_menu()
 
-    def run(self):
-        # Game loop: events - update - draw
+    def reset_game(self):
         self.playing = True
-        self.obstacle_mamager.reset_obstacles()
-        self.power_up_manager.reset_power_ups()
         self.score = 0
         self.game_speed = 20
+        self.obstacle_mamager.reset_obstacles()
+        self.power_up_manager.reset_power_ups(self.score)
+
+    def run(self):
+        # Game loop: events - update - draw
+        self.reset_game()
         while self.playing:
             self.events()
             self.update()
@@ -67,7 +72,7 @@ class Game:
         self.screen.fill((255, 255, 255))
         self.draw_background()
         self.draw_score()
-        self.draw_power_up_time()
+        self.power_up()
         self.player.draw(self.screen)
         self.obstacle_mamager.draw(self.screen)
         self.draw_deaht_count()
@@ -83,11 +88,11 @@ class Game:
             self.screen.blit(BG, (image_width + self.x_pos_bg, self.y_pos_bg))
             self.x_pos_bg = 0
         self.x_pos_bg -= self.game_speed
-    
+     
     def update_score(self):
         self.score += 1
         if self.score % 100 == 0:
-            self.game_speed += 0.5
+            self.game_speed += 1
 
         if self.max_score < self.score:
             self.max_score = self.score
@@ -112,21 +117,50 @@ class Game:
             self.text_color
         )
 
-    def draw_power_up_time(self):
+    def power_up(self):
         if self.player.has_power_up:
-            time_to_show = round((self.player.power_up_time_up - pygame.time.get_ticks()) / 1000,2)
-            if time_to_show >= 0:
-                print_message(
-                    self.screen,
-                    f"{self.player.type.capitalize()} enabled for {time_to_show} seconds.",
-                    18,
-                    (SCREEN_WIDTH // 2),
-                    ((SCREEN_HEIGHT // 2) - 200),
-                    self.text_color
-                )
-            else:
-                self.player.has_power_up = False
-                self.player.type = DEFAULT_TYPE
+            if self.player.type == "hammer":
+                if self.hammer_count == 0:
+                    self.player.type = DEFAULT_TYPE
+                    self.player.has_power_up = False
+                    HAMMER_BREAK.play()
+                    self.power_up_manager.reset_power_ups(self.score)
+                    
+                elif self.hammer_count > 0:
+                    print_message(
+                        self.screen,
+                        f"{self.player.type.capitalize()} enabled for {self.hammer_count} hits.",
+                        18,
+                        (SCREEN_WIDTH // 2),
+                        ((SCREEN_HEIGHT // 2) - 200),
+                        self.text_color
+                    )
+            elif self.player.type == "shield" or self.player.type == "clock":
+                if self.player.type == "clock":
+                    if self.game_speed_save < self.game_speed:
+                        self.game_speed_save = self.game_speed
+                    self.game_speed = self.game_speed_save - 10
+                time_to_show = round((self.player.power_up_time_up - pygame.time.get_ticks()) / 1000,2)
+                if time_to_show >= 0:
+                    print_message(
+                        self.screen,
+                        f"{self.player.type.capitalize()} enabled for {time_to_show} seconds.",
+                        18,
+                        (SCREEN_WIDTH // 2),
+                        ((SCREEN_HEIGHT // 2) - 200),
+                        self.text_color
+                    )
+                else:
+                    self.player.has_power_up = False
+                    self.player.type = DEFAULT_TYPE
+                    pygame.mixer.stop()
+                    self.power_up_manager.reset_power_ups(self.score)
+                    if self.game_speed_save > self.game_speed:
+                        self.game_speed = self.game_speed_save
+            
+            
+            
+            
 
     def handle_events_on_menu(self):
         for event in pygame.event.get():
@@ -156,7 +190,7 @@ class Game:
                 "Press any key to play again",
                 30,
                 half_screen_width,
-                half_screen_height-85,
+                half_screen_height,
                 self.text_color
             )
             print_message(
@@ -164,7 +198,7 @@ class Game:
                 f"Best score: {self.max_score}", 
                 20, 
                 half_screen_width, 
-                half_screen_height+5, 
+                half_screen_height+75, 
                 self.text_color
             )
             print_message(
@@ -172,7 +206,7 @@ class Game:
                 f"Round score: {self.score}", 
                 20, 
                 half_screen_width, 
-                half_screen_height-15, 
+                half_screen_height+55, 
                 self.text_color 
             )
             print_message(
@@ -180,10 +214,14 @@ class Game:
                 f"Deaths counter: {self.death_count}", 
                 20, 
                 half_screen_width, 
-                half_screen_height-35, 
+                half_screen_height+35, 
                 self.text_color 
             )
-            self.screen.blit(RESET_GAME, (half_screen_width -37, half_screen_height +35))
+            # self.screen.blit(RESET_GAME, (half_screen_width -37, half_screen_height +35))
+            self.player.has_power_up = False
+            self.player.type = DEFAULT_TYPE
+            self.screen.blit(DINO_FINISH, (half_screen_width -48, half_screen_height -140))
+            pygame.mixer.stop()
 
         pygame.display.update()
         self.handle_events_on_menu()

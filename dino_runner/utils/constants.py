@@ -5,7 +5,7 @@ import os
 TITLE = "Chrome Dino Runner"
 SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 1100
-FPS = 45
+FPS = 40
 IMG_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
 
 # Assets Constants
@@ -64,6 +64,9 @@ BIRD = [
 CLOUD = pygame.image.load(os.path.join(IMG_DIR, 'Other/Cloud.png'))
 SHIELD = pygame.image.load(os.path.join(IMG_DIR, 'Other/shield.png'))
 HAMMER = pygame.image.load(os.path.join(IMG_DIR, 'Other/hammer.png'))
+CLOCK = pygame.image.load(os.path.join(IMG_DIR, 'Other/clock.png'))
+DINO_FINISH = pygame.image.load(os.path.join(IMG_DIR, 'Dino/DinoFinish.png'))
+
 
 BG = pygame.image.load(os.path.join(IMG_DIR, 'Other/Track.png'))
 
@@ -71,7 +74,21 @@ HEART = pygame.image.load(os.path.join(IMG_DIR, 'Other/SmallHeart.png'))
 
 RESET_GAME = pygame.image.load(os.path.join(IMG_DIR, 'Other/Reset.png'))
 
+pygame.mixer.init()
+
+DINO_JUMP_SOUND = pygame.mixer.Sound('DinoJump.ogg')
+SHIELD_SOUND = pygame.mixer.Sound('ShieldSound.ogg')
+GET_HAMMER_SOUND = pygame.mixer.Sound('GetHammerSound.ogg')
+HIT_HAMMER_SOUND = pygame.mixer.Sound('HitHammerSound.ogg')
+HIT_SHIELD_SOUND = pygame.mixer.Sound('HitShieldSound.ogg')
+GET_CLOCK_SOUND = pygame.mixer.Sound('GetClockSound.ogg')
+GAME_OVER_SOUND = pygame.mixer.Sound('GameOverSound.ogg')
+HAMMER_BREAK = pygame.mixer.Sound('HammerBreak.ogg')
+
 DEFAULT_TYPE = "default"
 SHIELD_TYPE = "shield"
+HAMMER_TYPE = "hammer"
+CLOCK_TYPE = "clock"
+DINO_DEAD = "finish"
 
 FONT_STYLE = "freesansbold.ttf"
